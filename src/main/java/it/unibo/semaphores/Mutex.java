@@ -2,6 +2,7 @@ package it.unibo.semaphores;
 
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Stream;
 
 import static it.unibo.log.ThreadLogger.log;
 
@@ -33,10 +34,7 @@ public final class Mutex {
                 }
             }
         };
-        final Thread p = new Thread(task, "P");
-        final Thread q = new Thread(task, "Q");
-        final Thread r = new Thread(task, "R");
-        final List<Thread> threads = List.of(p, q, r);
+        final List<Thread> threads = Stream.of("P", "Q", "R").map(name -> new Thread(task, name)).toList();
         threads.forEach(Thread::start);
         for (Thread t : threads) {
             t.join();
