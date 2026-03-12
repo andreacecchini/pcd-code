@@ -18,13 +18,10 @@ public final class Mutex {
         final Runnable task = () -> {
             while (true) {
                 try {
-                    log("Starting NCS...");
-                    work(NCS_MS);
+                    NCS();
                     mutex.acquire();
                     try {
-                        log("Entered CS. I have the lock.");
-                        work(CS_MS);
-                        log("Leaving CS...");
+                        CS();
                     } finally {
                         mutex.release();
                     }
@@ -40,6 +37,17 @@ public final class Mutex {
             t.join();
         }
         System.out.println("Execution finished.");
+    }
+
+    private static void CS() throws InterruptedException {
+        log("Entered CS. I have the lock.");
+        work(CS_MS);
+        log("Leaving CS...");
+    }
+
+    private static void NCS() throws InterruptedException {
+        log("Starting NCS...");
+        work(NCS_MS);
     }
 
     public void acquire() throws InterruptedException {
