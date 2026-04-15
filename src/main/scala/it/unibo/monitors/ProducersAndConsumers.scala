@@ -1,8 +1,9 @@
 package it.unibo.monitors
 
 import it.unibo.log.ThreadLogger.*
-import java.util.concurrent.atomic.AtomicInteger
 
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 import scala.collection.mutable
 
 object ProducersAndConsumers:
@@ -11,30 +12,35 @@ object ProducersAndConsumers:
     def loop(body: => Unit): Unit = while (true) {
       body
     }
+    def criticalSection[T](lock: ReentrantLock)(body: => T) =
+      lock.lock()
+      try
+        body
+      finally
+        lock.unlock()
 
   import Utils.*
 
   class BoundedBuffer[A](capacity: Int):
     private val queue = mutable.Queue[A]()
+    private val lock = ReentrantLock()
+    private val isEmpty = lock.newCondition()
+    private val isFull = lock.newCondition()
 
-    def put(elem: A): Unit = synchronized {
-      while (queue.size == capacity) {
-        wait()
-      }
-      queue.enqueue(elem)
-      log(s"enqueue $elem...")
-      notifyAll()
-    }
+    def put(elem: A): Unit =
+      criticalSection(lock):
+        while queue.size == capacity do isFull.await()
+        queue.enqueue(elem)
+        log(s"enqueue $elem...")
+        isEmpty.signal()
 
-    def take(): A = synchronized {
-      while (queue.isEmpty) {
-        wait()
-      }
-      val elem = queue.dequeue()
-      log(s"dequeue $elem...")
-      notifyAll()
-      elem
-    }
+
+    def take(): A =
+      criticalSection(lock):
+        while queue.isEmpty do isEmpty.await()
+        val elem = queue.dequeue()
+        log(s"dequeue $elem...")
+        elem
 
   end BoundedBuffer
 
