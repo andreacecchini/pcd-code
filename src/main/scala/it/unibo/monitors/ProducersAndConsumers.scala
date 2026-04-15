@@ -27,30 +27,27 @@ object ProducersAndConsumers:
     private val isEmpty = lock.newCondition()
     private val isFull = lock.newCondition()
 
-    def put(elem: A): Unit =
-      criticalSection(lock):
-        while queue.size == capacity do isFull.await()
-        queue.enqueue(elem)
-        log(s"enqueue $elem...")
-        isEmpty.signal()
+    def put(elem: A): Unit = criticalSection(lock):
+      while queue.size == capacity do isFull.await()
+      queue.enqueue(elem)
+      log(s"enqueue $elem...")
+      isEmpty.signal()
 
 
-    def take(): A =
-      criticalSection(lock):
-        while queue.isEmpty do isEmpty.await()
-        val elem = queue.dequeue()
-        log(s"dequeue $elem...")
-        elem
+    def take(): A = criticalSection(lock):
+      while queue.isEmpty do isEmpty.await()
+      val elem = queue.dequeue()
+      log(s"dequeue $elem...")
+      elem
 
   end BoundedBuffer
 
   trait Producer[A](bb: BoundedBuffer[A]) extends Thread:
 
     def next: A
-    override def run(): Unit =
-      loop:
-        val elem: A = next
-        bb.put(elem)
+    override def run(): Unit = loop:
+      val elem: A = next
+      bb.put(elem)
 
   object Producer:
     private val producingTime = 1000
@@ -65,10 +62,9 @@ object ProducersAndConsumers:
   trait Consumer[A](bb: BoundedBuffer[A]) extends Thread:
 
     def consume(elem: A): Unit
-    override def run(): Unit =
-      loop:
-        val elem: A = bb.take()
-        consume(elem)
+    override def run(): Unit = loop:
+      val elem: A = bb.take()
+      consume(elem)
 
   object Consumer:
     private val consumingTime = 5000
