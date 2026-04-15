@@ -12,7 +12,7 @@ object ProducersAndConsumers:
     def loop(body: => Unit): Unit = while (true) {
       body
     }
-    def criticalSection[T](lock: ReentrantLock)(body: => T) =
+    def criticalSection[T](lock: ReentrantLock)(body: => T): T =
       lock.lock()
       try
         body
