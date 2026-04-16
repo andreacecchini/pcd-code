@@ -1,8 +1,8 @@
 package it.unibo.semaphores;
 
 import java.util.List;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Stream;
+import it.unibo.monitors.Semaphore;
 
 import static it.unibo.log.ThreadLogger.log;
 
@@ -10,7 +10,7 @@ public final class Mutex {
     private static final int PERMITS = 1;
     private static final int NCS_MS = 500;
     private static final int CS_MS = 5000;
-    private final Semaphore semaphore = new Semaphore(PERMITS);
+    private final Semaphore semaphore = Semaphore.apply(PERMITS);
     private Thread owner = null;
 
     static void main() throws InterruptedException {
@@ -51,13 +51,13 @@ public final class Mutex {
     }
 
     public void acquire() throws InterruptedException {
-        this.semaphore.acquire();
+        this.semaphore.waiting();
         this.owner = Thread.currentThread();
     }
 
     public void release() {
         if (this.owner != null && this.owner.equals(Thread.currentThread())) {
-            this.semaphore.release();
+            this.semaphore.signaling();
         }
     }
 

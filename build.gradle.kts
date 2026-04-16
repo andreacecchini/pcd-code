@@ -19,6 +19,13 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+sourceSets {
+    named("main") {
+        java.setSrcDirs(listOf(emptyList<String>()))
+        scala.setSrcDirs(listOf("src/main/java", "src/main/scala"))
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
 }
