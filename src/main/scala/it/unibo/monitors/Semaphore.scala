@@ -16,15 +16,10 @@ object Semaphore:
         _v = _v + 1
         notify()
 
+  /** Binary [[Semaphore]] allowing mutual exclusion. */
   def mutex: Semaphore = apply(1)
+  /** Event [[Semaphore]] allowing synchronization. */
   def eventSemaphore: Semaphore = apply(0)
+  /** Resource [[Semaphore]]. */
   def resourceSemaphore(n: Int): Semaphore = apply(n)
 
-@main def testSemaphore(): Unit =
-  // Binary semaphore allowing mutual exclusion
-  val mutex = Semaphore(1)
-  // Event semaphore allowing synchronization
-  val events = Semaphore(0)
-  // Resource semaphore
-  val n = 10
-  val resources = Semaphore(n)
