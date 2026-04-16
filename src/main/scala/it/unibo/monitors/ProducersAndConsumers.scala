@@ -36,14 +36,14 @@ object ProducersAndConsumers:
             _isFull.signal()
             elem
 
-  trait Producer[A](bb: BoundedBuffer[A]) extends Thread:
+  trait Producer[A](using bb: BoundedBuffer[A]) extends Thread:
     protected def produce(): A
     override def run(): Unit =
       loop:
         val elem: A = produce()
         bb.put(elem)
 
-  trait Consumer[A](bb: BoundedBuffer[A]) extends Thread:
+  trait Consumer[A](using bb: BoundedBuffer[A]) extends Thread:
     protected def consume(elem: A): Unit
     override def run(): Unit =
       loop:
@@ -54,7 +54,7 @@ object ProducersAndConsumers:
     private val producingTime = 1000
     private val counter = AtomicInteger(0)
     def apply(i: Int)(using bb: BoundedBuffer[Int]): Producer[Int] =
-      new Producer[Int](bb):
+      new Producer[Int]:
         setName(s"Producer-$i")
         override def produce(): Int =
           Thread.sleep(producingTime)
@@ -64,7 +64,7 @@ object ProducersAndConsumers:
   object Consumer:
     private val consumingTime = 5000
     def apply(i: Int)(using bb: BoundedBuffer[Int]): Consumer[Int] =
-      new Consumer[Int](bb):
+      new Consumer[Int]:
         setName(s"Consumer-$i")
         override def consume(elem: Int): Unit =
           Thread.sleep(consumingTime)
