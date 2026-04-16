@@ -10,25 +10,25 @@ import it.unibo.utils.ConcurrencyUtils.*
 object ProducersAndConsumers:
 
   class BoundedBuffer[A](capacity: Int):
-    private val queue = mutable.Queue[A]()
-    private val lock = ReentrantLock()
-    private val isEmpty = lock.newCondition()
-    private val isFull = lock.newCondition()
+    private val _queue = mutable.Queue[A]()
+    private val _lock = ReentrantLock()
+    private val _isEmpty = _lock.newCondition()
+    private val _isFull = _lock.newCondition()
 
-    given ReentrantLock = lock
+    given ReentrantLock = _lock
     def put(elem: A): Unit =
       criticalSection:
-        while queue.size == capacity do isFull.await()
-        queue.enqueue(elem)
+        while _queue.size == capacity do _isFull.await()
+        _queue.enqueue(elem)
         log(s"enqueue $elem...")
-        isEmpty.signal()
+        _isEmpty.signal()
 
     def take(): A =
       criticalSection:
-        while queue.isEmpty do isEmpty.await()
-        val elem = queue.dequeue()
+        while _queue.isEmpty do _isEmpty.await()
+        val elem = _queue.dequeue()
         log(s"dequeue $elem...")
-        isFull.signal()
+        _isFull.signal()
         elem
 
   end BoundedBuffer
@@ -64,7 +64,7 @@ object ProducersAndConsumers:
         setName(s"Consumer-$i")
         override def consume(elem: Int): Unit =
           Thread.sleep(consumingTime);
-          log(elem.toString)
+          log(s"consumed ${elem.toString}...")
 
 
 end ProducersAndConsumers
