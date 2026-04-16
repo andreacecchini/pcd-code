@@ -1,7 +1,5 @@
 package it.unibo.semaphore
 
-import it.unibo.monitors.Semaphore
-
 trait Semaphore:
   def waiting(): Unit
   def signaling(): Unit
