@@ -4,8 +4,9 @@ import it.unibo.log.ThreadLogger.*
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
-import scala.collection.mutable
 import it.unibo.utils.ConcurrencyUtils.*
+
+import scala.reflect.ClassTag
 
 object ProducersAndConsumers:
 
@@ -28,26 +29,36 @@ object ProducersAndConsumers:
         consume(elem)
 
   object BoundedBuffer:
-    def apply[A](capacity: Int): BoundedBuffer[A] =
+    def apply[A: ClassTag](capacity: Int): BoundedBuffer[A] =
+      require(capacity > 0, "capacity must be > 0")
+
       new BoundedBuffer[A]:
-        private val _queue = mutable.Queue[A]()
+        private val _buff: Array[A] = new Array(capacity + 1)
+        private var head = 0
+        private var tail = 0
         private val _lock = ReentrantLock()
-        private val _isEmpty = _lock.newCondition()
-        private val _isFull = _lock.newCondition()
+        private val _notEmpty = _lock.newCondition()
+        private val _notFull = _lock.newCondition()
+        private inline def next(i: Int): Int = (i + 1) % _buff.length
+        private def isFull: Boolean = next(tail) == head
+        private def isEmpty: Boolean = tail == head
 
         given ReentrantLock = _lock
         override def put(elem: A): Unit =
           criticalSection:
-            while _queue.size == capacity do _isFull.await()
-            _queue.enqueue(elem)
+            while isFull do _notFull.await()
+            _buff(tail) = elem
+            tail = next(tail)
             log(s"put $elem...")
-            _isEmpty.signal()
+            _notEmpty.signal()
+
         override def take(): A =
           criticalSection:
-            while _queue.isEmpty do _isEmpty.await()
-            val elem: A = _queue.dequeue()
+            while isEmpty do _notEmpty.await()
+            val elem = _buff(head)
+            head = next(head)
             log(s"take $elem...")
-            _isFull.signal()
+            _notFull.signal()
             elem
 
 
