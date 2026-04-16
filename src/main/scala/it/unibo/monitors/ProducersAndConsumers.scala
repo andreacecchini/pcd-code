@@ -13,6 +13,20 @@ object ProducersAndConsumers:
     def put(elem: A): Unit
     def take(): A
 
+  trait Producer[A](using bb: BoundedBuffer[A]) extends Thread:
+    protected def produce(): A
+    override def run(): Unit =
+      loop:
+        val elem: A = produce()
+        bb.put(elem)
+
+  trait Consumer[A](using bb: BoundedBuffer[A]) extends Thread:
+    protected def consume(elem: A): Unit
+    override def run(): Unit =
+      loop:
+        val elem: A = bb.take()
+        consume(elem)
+
   object BoundedBuffer:
     def apply[A](capacity: Int): BoundedBuffer[A] =
       new BoundedBuffer[A]:
@@ -36,19 +50,6 @@ object ProducersAndConsumers:
             _isFull.signal()
             elem
 
-  trait Producer[A](using bb: BoundedBuffer[A]) extends Thread:
-    protected def produce(): A
-    override def run(): Unit =
-      loop:
-        val elem: A = produce()
-        bb.put(elem)
-
-  trait Consumer[A](using bb: BoundedBuffer[A]) extends Thread:
-    protected def consume(elem: A): Unit
-    override def run(): Unit =
-      loop:
-        val elem: A = bb.take()
-        consume(elem)
 
   object Producer:
     private val producingTime = 1000

@@ -19,7 +19,7 @@ object Semaphore:
   /** Binary [[Semaphore]] allowing mutual exclusion. */
   def mutex: Semaphore = apply(1)
   /** Event [[Semaphore]] allowing synchronization. */
-  def eventSemaphore: Semaphore = apply(0)
+  def event: Semaphore = apply(0)
   /** Resource [[Semaphore]]. */
-  def resourceSemaphore(n: Int): Semaphore = apply(n)
+  def resource(n: Int): Semaphore = apply(n)
 
