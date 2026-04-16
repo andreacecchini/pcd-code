@@ -16,9 +16,9 @@ object Semaphore:
         _v = _v + 1
         notify()
 
-  def mutex: Semaphore = Semaphore(1)
-  def eventSemaphore: Semaphore = Semaphore(0)
-  def resourceSemaphore(n: Int): Semaphore = Semaphore(n)
+  def mutex: Semaphore = apply(1)
+  def eventSemaphore: Semaphore = apply(0)
+  def resourceSemaphore(n: Int): Semaphore = apply(n)
 
 @main def testSemaphore(): Unit =
   // Binary semaphore allowing mutual exclusion
