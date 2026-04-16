@@ -58,7 +58,7 @@ object ProducersAndConsumers:
       new Producer[Int]:
         setName(s"Producer-$i")
         override def produce(): Int =
-          Thread.sleep(producingTime)
+          work(producingTime)
           counter.getAndIncrement()
 
 
@@ -68,7 +68,7 @@ object ProducersAndConsumers:
       new Consumer[Int]:
         setName(s"Consumer-$i")
         override def consume(elem: Int): Unit =
-          Thread.sleep(consumingTime)
+          work(consumingTime)
           log(s"consumed ${elem.toString}...")
 
 
