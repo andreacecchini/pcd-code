@@ -9,29 +9,32 @@ import it.unibo.utils.ConcurrencyUtils.*
 
 object ProducersAndConsumers:
 
-  class BoundedBuffer[A](capacity: Int):
-    private val _queue = mutable.Queue[A]()
-    private val _lock = ReentrantLock()
-    private val _isEmpty = _lock.newCondition()
-    private val _isFull = _lock.newCondition()
+  trait BoundedBuffer[A]:
+    def put(elem: A): Unit
+    def take(): A
 
-    given ReentrantLock = _lock
-    def put(elem: A): Unit =
-      criticalSection:
-        while _queue.size == capacity do _isFull.await()
-        _queue.enqueue(elem)
-        log(s"enqueue $elem...")
-        _isEmpty.signal()
+  object BoundedBuffer:
+    def apply[A](capacity: Int): BoundedBuffer[A] =
+      new BoundedBuffer[A]:
+        private val _queue = mutable.Queue[A]()
+        private val _lock = ReentrantLock()
+        private val _isEmpty = _lock.newCondition()
+        private val _isFull = _lock.newCondition()
 
-    def take(): A =
-      criticalSection:
-        while _queue.isEmpty do _isEmpty.await()
-        val elem = _queue.dequeue()
-        log(s"dequeue $elem...")
-        _isFull.signal()
-        elem
-
-  end BoundedBuffer
+        given ReentrantLock = _lock
+        override def put(elem: A): Unit =
+          criticalSection:
+            while _queue.size == capacity do _isFull.await()
+            _queue.enqueue(elem)
+            log(s"put $elem...")
+            _isEmpty.signal()
+        override def take(): A =
+          criticalSection:
+            while _queue.isEmpty do _isEmpty.await()
+            val elem: A = _queue.dequeue()
+            log(s"take $elem...")
+            _isFull.signal()
+            elem
 
   trait Producer[A](bb: BoundedBuffer[A]) extends Thread:
     protected def produce(): A
@@ -39,6 +42,13 @@ object ProducersAndConsumers:
       loop:
         val elem: A = produce()
         bb.put(elem)
+
+  trait Consumer[A](bb: BoundedBuffer[A]) extends Thread:
+    protected def consume(elem: A): Unit
+    override def run(): Unit =
+      loop:
+        val elem: A = bb.take()
+        consume(elem)
 
   object Producer:
     private val producingTime = 1000
@@ -50,12 +60,6 @@ object ProducersAndConsumers:
           Thread.sleep(producingTime)
           counter.getAndIncrement()
 
-  trait Consumer[A](bb: BoundedBuffer[A]) extends Thread:
-    protected def consume(elem: A): Unit
-    override def run(): Unit =
-      loop:
-        val elem: A = bb.take()
-        consume(elem)
 
   object Consumer:
     private val consumingTime = 5000
@@ -63,7 +67,7 @@ object ProducersAndConsumers:
       new Consumer[Int](bb):
         setName(s"Consumer-$i")
         override def consume(elem: Int): Unit =
-          Thread.sleep(consumingTime);
+          Thread.sleep(consumingTime)
           log(s"consumed ${elem.toString}...")
 
 
@@ -74,7 +78,8 @@ end ProducersAndConsumers
   val nProducers = 2
   val nConsumers = 5
   val capacity = 2
+  val bb: BoundedBuffer[Int] = BoundedBuffer(capacity)
 
-  given BoundedBuffer[Int](capacity)
+  given BoundedBuffer[Int] = bb
   for i <- 1 to nProducers do Producer(i).start()
   for i <- 1 to nConsumers do Consumer(i).start()
