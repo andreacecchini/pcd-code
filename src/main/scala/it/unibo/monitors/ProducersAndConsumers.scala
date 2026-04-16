@@ -52,23 +52,23 @@ object ProducersAndConsumers:
 
 
   object Producer:
-    private val producingTime = 1000
+    private val P_TIME = 1000
     private val counter = AtomicInteger(0)
     def apply(i: Int)(using bb: BoundedBuffer[Int]): Producer[Int] =
       new Producer[Int]:
         setName(s"Producer-$i")
         override def produce(): Int =
-          work(producingTime)
+          work(P_TIME)
           counter.getAndIncrement()
 
 
   object Consumer:
-    private val consumingTime = 5000
+    private val C_TIME = 5000
     def apply(i: Int)(using bb: BoundedBuffer[Int]): Consumer[Int] =
       new Consumer[Int]:
         setName(s"Consumer-$i")
         override def consume(elem: Int): Unit =
-          work(consumingTime)
+          work(C_TIME)
           log(s"consumed ${elem.toString}...")
 
 
