@@ -7,10 +7,9 @@ import it.unibo.monitors.Semaphore;
 import static it.unibo.log.ThreadLogger.log;
 
 public final class Mutex {
-    private static final int PERMITS = 1;
     private static final int NCS_MS = 500;
     private static final int CS_MS = 5000;
-    private final Semaphore semaphore = Semaphore.apply(PERMITS);
+    private final Semaphore semaphore = Semaphore.mutex();
     private Thread owner = null;
 
     static void main() throws InterruptedException {
