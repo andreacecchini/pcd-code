@@ -1,4 +1,6 @@
-package it.unibo.monitors
+package it.unibo.semaphore
+
+import it.unibo.monitors.Semaphore
 
 trait Semaphore:
   def waiting(): Unit

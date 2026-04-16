@@ -2,7 +2,7 @@ package it.unibo.semaphores;
 
 import java.util.List;
 import java.util.stream.Stream;
-import it.unibo.monitors.Semaphore;
+import it.unibo.semaphore.Semaphore;
 
 import static it.unibo.log.ThreadLogger.log;
 
